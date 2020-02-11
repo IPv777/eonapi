@@ -605,6 +605,38 @@ class ObjectManager {
 		return $this->listNagiosObjects("hosts")["default"];
 	}
 
+	
+	public function iTopIdExists($iTopId_toSearch) {
+		# on récupère la liste des hôtes EoN
+		$hosts_list = $this->listHosts();
+		# pour chaque hôte de la liste
+		foreach ($hosts_list as $host) {
+			# pour chaque variable custom de l'hôte
+			foreach ($host["custom_variable_names"] as $custom_variable_key => $custom_variable_name) {
+				# on vérifie si c'est l'ID iTop
+				if ($custom_variable_name == "ITOP_ID") {
+					# si on a une valeur correspondante dans le tableau des valeurs
+					if (array_key_exists($custom_variable_key, $host["custom_variable_values"])) {
+						# on récupère la valeur
+						$iTopId = $host["custom_variable_values"][$custom_variable_key];
+						# si la valeur n'est pas vide
+						if (!empty($iTopId)) {
+							# on la compare avec l'ID recherché
+							if ($iTopId == $iTopId_toSearch) {
+								# on récupère l'ID EoN correpondant
+								$hostId = $this->getHost($host["name"]) ["Id"];
+								# et on retourne l'ID EoN
+								return ($hostId);
+							}
+						}
+					}
+				}
+			}
+		}
+		return ("ERROR : iTop ID $iTopId_toSearch doesn't exist.");
+	}
+	
+	
 ########################################## GET
 	/* EONAPI - Display results */
     private function getLogs($error, $success){
