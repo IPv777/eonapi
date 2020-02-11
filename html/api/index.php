@@ -156,6 +156,7 @@ addRoute('post', '/listNagiosStates', 'listNagiosStates', 'readonly');
 addRoute('post', '/listNagiosObjects', 'listNagiosObjects', 'readonly');
 addRoute('post', '/listNagiosBackends', 'listNagiosBackends', 'readonly');
 addRoute('post', '/listHosts', 'listHosts', 'readonly');
+addRoute('post', '/iTopIdExists', 'iTopIdExists', 'readonly');
 
 //==============================================================================
 //eonweb
