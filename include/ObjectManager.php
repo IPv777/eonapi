@@ -626,7 +626,7 @@ class ObjectManager {
 								# on récupère l'ID EoN correpondant
 								$hostId = $this->getHost($host["name"]) ["Id"];
 								# et on retourne l'ID EoN
-								return ($hostId);
+								return ((int)$hostId);
 							}
 						}
 					}
