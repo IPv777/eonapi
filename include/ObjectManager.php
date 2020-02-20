@@ -4166,7 +4166,7 @@ class ObjectManager {
 				
 
 				if(isset($newHostAlias)) {
-					$host->setAlias($hostAlias);
+					$host->setAlias($newHostAlias);
 					$changed++;
 				}
 
