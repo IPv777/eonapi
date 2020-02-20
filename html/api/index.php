@@ -92,6 +92,7 @@ addRoute('post', '/addInheritServiceTemplateToServiceTemplate', 'addInheritServi
 addRoute('post', '/addCheckCommandParameterToServiceInHostTemplate', 'addCheckCommandParameterToServiceInHostTemplate');
 
 addRoute('post', '/modifyHost', 'modifyHost');
+addRoute('post', '/modifyHostById', 'modifyHostById');
 addRoute('post', '/modifyContact', 'modifyContact');
 addRoute('post', '/modifyCommand', 'modifyCommand');
 addRoute('post', '/modifyHostTemplate', 'modifyHostTemplate');
