@@ -4137,6 +4137,114 @@ class ObjectManager {
         return array("code"=>$code,"description"=>$logs);        
 	}
 
+
+
+	public function modifyHostById( $templateHostName=NULL, $id, $newHostName=NULL, $newHostIp=NULL, $newHostAlias=NULL, $contactName = NULL, $contactGroupName = NULL, $exportConfiguration = FALSE ){
+        $error = "";
+        $success = "";
+		$code=0;
+		
+        $nhp = new NagiosHostPeer;
+		// Find host
+		$host = $nhp->getById($id);
+		if(!isset($host)) {
+			$code=1;
+			$error .= "Host with ID $id doesn't exist\n";
+		}
+        
+		// Lauch actions if no errors
+		if(empty($error)) {	
+			try {
+				// host
+				$changed=0;
+				if(isset($newHostName)){
+					if($host->getName() != $newHostName){
+						$host->setName($newHostName);
+						$changed++;
+					}
+				}
+				
+
+				if(isset($newHostAlias)) {
+					$host->setAlias($hostAlias);
+					$changed++;
+				}
+
+				if(isset($newHostIp)){
+					if($host->getAddress() != $newHostIp){
+						$host->setAddress($newHostIp);
+						$changed++;
+					}						
+				}
+				$host->save();
+				if($changed>0){
+					$success .= "Host with ID $id updated\n";
+				}
+
+				// host-template
+				if(isset($templateHostName)){
+					$nhtp = new NagiosHostTemplatePeer;
+					// Find host template
+					$template_host = $nhtp->getByName($templateHostName);
+					if(!$template_host) {
+						$code=1;
+						$error .= "Host Template $templateHostName not found\n";
+					}else{
+						$c = new Criteria();
+						$c->add(NagiosHostTemplateInheritancePeer::SOURCE_TEMPLATE, $targetTemplateHost->getId());
+						$c->add(NagiosHostTemplateInheritancePeer::TARGET_TEMPLATE, $targetInheritanceTemplate->getId());
+						$membership = NagiosHostTemplateInheritancePeer::doSelectOne($c);
+						if(!$membership) {
+							$newInheritance = new NagiosHostTemplateInheritance();
+							$newInheritance->setNagiosHost($host);
+							$newInheritance->setNagiosHostTemplateRelatedByTargetTemplate($template_host);
+							$newInheritance->save();
+							$changed++;
+							$success .= "Host Template ".$templateHostName." added to host with ID $id\n";
+						}
+						else {
+							$error .= "Host Template ".$templateHostName." already linked to host with ID $id\n";
+						}
+					}
+				}
+
+                if( $contactName != NULL ){
+					//Add a contact to a host
+                    if ($this->addContactToHost( $host, $contactName, $error, $success )["code"] == 0){
+						$changed++;
+					}
+                }
+                
+                if( $contactGroupName != NULL ){
+                    //Add a contact group to a host
+                    if($this->addContactGroupToHost( $host, $contactGroupName, $error, $success )["code"]==0){
+						$changed++;
+					}    
+                }
+                                
+				// Export
+                if( $exportConfiguration == TRUE )
+					$this->exportConfigurationToNagios($error, $success);
+					
+				if($changed==0){
+					$code=1;
+				}
+			}
+			catch(Exception $e) {
+				$code=1;
+				$error .= $e->getMessage()."\n";
+			}
+		}
+        
+        $logs = $this->getLogs($error, $success);
+        
+        return array("code"=>$code,"description"=>$logs);        
+	}
+
+
+
+
+
 	/* LILAC - Modify CheckCommand for a service template--- */  
     public function modifyCheckCommandToServiceTemplate($commandName, $templateServiceName, $exportConfiguration=FALSE){
 		$error = "";
@@ -5262,29 +5370,29 @@ public function deleteParentToHost($parentName, $childName, $exportConfiguration
 		$success = "";
 		$code = 0;
 		try {
-						$nhp = new NagiosHostPeer;
-						$host = $nhp->getById($id);
-						if ($host) {
-										$host->delete();
-										$success .= "Host with ID " . $id . " deleted\n";
-						}
-						else {
-										$code = 1;
-										$error .= "Host with ID " . $id . " not found\n";
-						}
+			$nhp = new NagiosHostPeer;
+			$host = $nhp->getById($id);
+			if ($host) {
+				$host->delete();
+				$success .= "Host with ID " . $id . " deleted\n";
+			}
+			else {
+				$code = 1;
+				$error .= "Host with ID " . $id . " not found\n";
+			}
 
-						// Export
-						if ($exportConfiguration == true) $this->exportConfigurationToNagios();
+			// Export
+			if ($exportConfiguration == true) $this->exportConfigurationToNagios();
 		}
 		catch(Exception $e) {
-						$code = 1;
-						$error .= $e->getMessage() . "\n";
+			$code = 1;
+			$error .= $e->getMessage() . "\n";
 		}
 
 		$logs = $this->getLogs($error, $success);
 		return array(
-						"code" => $code,
-						"description" => $logs
+			"code" => $code,
+			"description" => $logs
 		);
 	}    
 
