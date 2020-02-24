@@ -619,7 +619,7 @@ class ObjectManager {
         return rtrim($logs," | ");
     }
 	/* LILAC - Get Host */
-	public function getHost( $hostName){
+	public function getHost($hostName){
         $nhp = new NagiosHostPeer;
 		// Find host
 		$host = $nhp->getByName($hostName);
@@ -5993,12 +5993,59 @@ public function deleteParentToHost($parentName, $childName, $exportConfiguration
 	
 	/* LILAC - Export Nagios Configuration */
 	public function exportConfiguration($jobName = "nagios"){
-        $error = "";
-        $success = "";
+        // $error = "";
+        // $success = "";
+		// $this->exportConfigurationToNagios($error, $success, $jobName);	
+		// $logs = $this->getLogs($error, $success);
+		// return $logs;
 		
-		$this->exportConfigurationToNagios($error, $success, $jobName);	
+		$error = "";
+		$success = "";
+		$code = 0;
+		try {
+			$c = new Criteria();
+			//$c->add(ExportJobPeer::END_TIME, null);
+			$exportJobs = ExportJobPeer::doSelect($c);
+			
+			$nagiosJobId = NULL;
+			foreach($exportJobs as $job){
+				if( $job->getName() == $jobName ){
+					$nagiosJobId = $job->getId();
+					break;
+				}
+			}
+			
+			if( $nagiosJobId == NULL ){
+				throw new Exception("le job d'export $jobName n'existe pas");
+			} else {
+				$exportJob = ExportJobPeer::retrieveByPK( $nagiosJobId );
+				$exportJob->setStatusCode(ExportJob::STATUS_STARTING);
+				$exportJob->setStartTime(time());
+				$exportJob->setStatus("Starting...");
+				$exportJob->save();
+				// exec("php /srv/eyesofnetwork/lilac/exporter/export.php " . $exportJob->getId() . " > /dev/null 2>&1", $return, $return_code);
+				exec("php /srv/eyesofnetwork/lilac/exporter/export.php " . $exportJob->getId() . " 2>&1", $return, $return_code);
+				if ($return_code == 0){
+					$success .= $jobName . " : Nagios configuration exported\n";
+				} else {
+					# generation du texte d'erreur
+					foreach ($return as $i => $ligne) {
+						$texte_erreur .= "{$ligne}\n";
+					}
+					throw new Exception("echec de l'export : {$texte_erreur}");
+				}
+			}
+		}
+		catch(Exception $e) {
+			$return_code = 1;
+			$error = $jobName . " ERROR : " . $e->getMessage() . "\n";
+		}
+
 		$logs = $this->getLogs($error, $success);
-        return $logs;
+		return array(
+			"code" => $return_code,
+			"description" => $logs
+		);
 	}
 
 	/* LIVESTATUS - checkHost */
