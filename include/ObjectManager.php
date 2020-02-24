@@ -6060,11 +6060,12 @@ public function deleteParentToHost($parentName, $childName, $exportConfiguration
 				if ($return_code == 0){
 					$success .= $jobName . " : Nagios configuration exported\n";
 				} else {
+					$texte_erreur = "";
 					# generation du texte d'erreur
 					foreach ($return as $i => $ligne) {
-						$texte_erreur .= "{$ligne}\n";
+						$texte_erreur .= "$ligne\n";
 					}
-					throw new Exception("echec de l'export : {$texte_erreur}");
+					throw new Exception("echec de l'export :\n$texte_erreur");
 				}
 			}
 		}
