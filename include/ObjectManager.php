@@ -6057,11 +6057,11 @@ public function deleteParentToHost($parentName, $childName, $exportConfiguration
 				$exportJob->save();
 				// exec("php /srv/eyesofnetwork/lilac/exporter/export.php " . $exportJob->getId() . " > /dev/null 2>&1", $return, $return_code);
 				exec("php /srv/eyesofnetwork/lilac/exporter/export.php " . $exportJob->getId() . " 2>&1", $return, $return_code);
-				if ($return_code == 0){
+				if (($return_code == 0) or ($return_code == 42)){ // 42 correspond au succès lors d'un fork du process exporter.php, voir code dans exporter.php
 					$success .= $jobName . " : Nagios configuration exported\n";
 				} else {
 					$texte_erreur = "";
-					# generation du texte d'erreur
+					// generation du texte d'erreur
 					foreach ($return as $i => $ligne) {
 						$texte_erreur .= "$ligne\n";
 					}
