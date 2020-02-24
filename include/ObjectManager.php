@@ -6001,6 +6001,7 @@ public function deleteParentToHost($parentName, $childName, $exportConfiguration
 		
 		$error = "";
 		$success = "";
+		$return_code = ""
 		$code = 0;
 		try {
 			$c = new Criteria();
@@ -6038,7 +6039,9 @@ public function deleteParentToHost($parentName, $childName, $exportConfiguration
 			}
 		}
 		catch(Exception $e) {
-			$return_code = 1;
+			if ($return_code == ""){
+				$return_code = 1;
+			}
 			$error = $jobName . " ERROR : " . $e->getMessage() . "\n";
 		}
 
