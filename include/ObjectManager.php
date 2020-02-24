@@ -6033,7 +6033,7 @@ public function deleteParentToHost($parentName, $childName, $exportConfiguration
 		
 		$error = "";
 		$success = "";
-		$return_code = ""
+		$return_code = "";
 		$code = 0;
 		try {
 			$c = new Criteria();
