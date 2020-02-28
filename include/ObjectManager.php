@@ -635,6 +635,32 @@ class ObjectManager {
 		}
 		return ("ERROR : iTop ID $iTopId_toSearch doesn't exist.");
 	}
+		
+	public function list_iTop_hosts() {
+		# on récupère la liste des hôtes EoN
+		$hosts_list = $this->listHosts();
+		$iTop_hosts_id = array();
+		# pour chaque hôte de la liste
+		foreach ($hosts_list as $host) {
+			# pour chaque variable custom de l'hôte
+			foreach ($host["custom_variable_names"] as $custom_variable_key => $custom_variable_name) {
+				# on vérifie si c'est l'ID iTop
+				if ($custom_variable_name == "ITOP_ID") {
+					# si on a une valeur correspondante dans le tableau des valeurs
+					if (array_key_exists($custom_variable_key, $host["custom_variable_values"])) {
+						# on récupère la valeur
+						$iTopId = $host["custom_variable_values"][$custom_variable_key];
+						# si la valeur n'est pas vide
+						if (!empty($iTopId)) {
+							# on l'ajoute au tableau
+							array_push($iTop_hosts_id, $iTopId);
+						}
+					}
+				}
+			}
+		}
+		return($iTop_hosts_id);
+	}
 	
 	
 ########################################## GET
